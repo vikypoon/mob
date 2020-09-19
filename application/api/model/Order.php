@@ -100,7 +100,6 @@ class Order extends OrderModel
 			$this->updateGoodsStockNum($order['goods_list']);
 			// 记录收货地址
 			$this->saveOrderAddress($user_id, $order['address']);
-			// dump(11111111111);die;
 			Db::commit();
 			return true;
 
