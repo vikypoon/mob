@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html style="font-size: 64.6875px;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>深圳依美医疗美容门诊部</title>
+<head>
+	<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximun-scale=1.0,initial-scale=1.0,user-scalable=no">
+	<title></title>
+	<script src="__JS__/jquery-1.9.1.min.js"></script>
+	<style type="text/css">
+	body{
+    margin:0px auto;
+    padding:0px;
+	}
+	*{margin: 0 auto;}
+	body {font-family:微软雅黑;opacity:1;filter:alpha(opacity=100);font-size:0.01rem;}
+	@media screen and (max-width: 320px) {
+    .menu ul li{ font-size: 12px;}
+	}
+	*:focus { outline: none; }
+	.from{position: relative;width: 100%;}
+	.fromimg{float: left;margin: 12px 1px 1px 6px;}
+	.fcontent{float: left;margin: 32px 1px 1px 27px;border: 1px #a9a996 solid;border-radius: 10px;line-height: 25px;background: white;}
+	.to{margin-top: 64px;position: relative;float: right;width: 100%;right: -269px;}
+	.tcontent{float: left;margin: 14px 21px 1px 27px;border: 1px #a9a996 solid;border-radius: 10px;line-height: 25px;background: white;}
+	.timg{float: left;}
+	.content{width: 75%;border-radius: 25px;border: 1px gainsboro solid;line-height: 30px;margin-left: 13px;}
+	.send{line-height: 30px;border: 1px white solid;border-radius: 25px;width: 16%;background: #42dab0;color: white;}
+	</style>
+</head>
+<body >
+<div style="position: relative;">
+	<!-- talk -->
+	<div style="width: 100%;height: 670px;background: gainsboro;" class="chat_content">
+	</div>
+	<!-- send -->
+	<div style="padding-top: 15px;">
+		<input type="text" class="content">
+		<input type="submit" value="发送" class="send">	
+	</div>
+</div>
+<script>
+	var API_URL = '/index.php/api/chat/'
+	var fromid = {$fromid};
+	var toid = {$toid};
+	var from_head = '';
+	var to_head = '';
+	var to_name='';
+	var ws = new WebSocket("ws://127.0.0.1:8282");
+
+	$(".send").click(function(){
+		var text = $(".content").val();
+		$('.chat_content').append('<div class="to"><div class="shop-title" style="position: relative;margin-left: 82px;margin-bottom: 5px;"></div><div class=""><div class="tcontent">'+text+'</div><div class="timg"><img src="/static/img/myIcon.png" style="width:50px;height:50px;border-radius: 25px;border: 1px solid #888856;"></div></div>');
+		$(".chat_content").scrollTop(3000);
+		var message = '{"data":"'+text+'","type":"say","fromid":"'+fromid+'","toid":"'+toid+'"}';
+		ws.send(message);
+		$(".content").val("");
+	})
+
+	ws.onmessage = function(e){
+		var message = eval("("+e.data+")");//客户端收到json数据转换为js
+		console.log(message);
+		switch(message.type){
+			// 点击连接服务器传init
+			case 'init':
+				var bild = '{"type":"bind","fromid":"'+fromid+'"}';
+				ws.send(bild);
+				get_head(fromid,toid);
+				get_name(toid);
+				message_load();//当页面加载的时候，执行。
+				var online = '{"type":"online","toid":"'+toid+'","fromid":"'+fromid+'"}';
+				ws.send(online);
+
+				return;
+
+			case 'text':
+				if (toid==message.fromid) {
+					$('.chat_content').append('<div class="from"><div class="fromimg"><img src="/static/img/myIcon.png" style="width:50px;height:50px;border-radius: 25px;border: 1px solid #888856;"></div><div class="fcontent">'+message.data+'</div></div>');	
+					$(".chat_content").scrollTop(3000);
+				};
+			return;
+
+			case 'save':
+				save_message(message);
+				// if(message.isread == 1){$(.shop-online).text("在线")}else{$(.shop-online).text("不在线");} //这是一种不完善的判断行为，应该使用events 里面的onclose()进行开发，这样比较合适，所以这个isread只是一个开发思路而已。
+			return;
+
+			case "online":
+				// if(message.status==1){
+				// 	$(.shop-online).text("在线");
+				// }else{
+				// 	$(.shop-online).text("不在线");
+				// }
+
+
+		}
+	}
+
+	
+
+	function save_message(message){
+		$.post(
+				API_URL+"save_message",
+				message,
+				function(){
+
+				},'json'
+			)
+	}
+
+
+	function  get_head(fromid,toid){
+		$.post(
+			API_URL+"get_head",
+			{"fromid":fromid,"toid":toid},
+			function(e){
+			from_head = e.from_head;
+			to_head = e.from_head;
+			},'json'
+		);
+
+	}
+
+	function get_name(toid){
+			$.post(
+				API_URL+"get_name",
+				{"uid":toid},
+				function(e){
+				to_name = e.to_name;
+				$(".shop-title").text("对方用户昵称是："+to_name);
+				console.log(e);
+			},'json'
+		);
+	}
+
+	function message_load()
+	{
+		$.post(
+			API_URL+"load",
+			{"fromid":fromid,"toid":toid},
+			function(e){
+			//循环输出数据
+			$.each(e,function(index,content){
+			//index是数据的下标
+				if(fromid==content.fromid){
+				//我发给对方的信息，要展示在右侧
+				$(".chat_content").append('<div class="to"><div class="shop-title" style="position: relative;margin-left: 82px;margin-bottom: 5px;"></div><div class=""><div class="tcontent">'+content.content+'</div><div class="timg"><img src="/static/img/myIcon.png" style="width:50px;height:50px;border-radius: 25px;border: 1px solid #888856;"></div></div>');
+				}else{
+				//对方发送数据，展示在左侧
+				$(".chat_content").append('<div class="from"><div class="fromimg"><img src="/static/img/myIcon.png" style="width:50px;height:50px;border-radius: 25px;border: 1px solid #888856;"></div><div class="fcontent">'+content.content+'</div></div>');
+				}
+			})
+			//页面加载的时候，直接显示最下面
+			$(".chat_content").scrollTop(3000);
+			},'json'
+		);
+	};
+
+
+
+</script>
+</body>
+</html>

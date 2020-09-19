@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+    <title>微信安全支付</title>
+    <script type="text/javascript">
+        //调用微信JS api 支付
+        function jsApiCall()
+        {
+            WeixinJSBridge.invoke(
+                'getBrandWCPayRequest',
+                {"appId": "wxa4eb4297ebde7f25 ",
+                "timeStamp": "1414411784",
+                "nonceStr": "2am6nuuxczbumyzwgrwok2zr979ql4sq",
+                "package": "prepay_id=wx1912462835193249ab2b31ea1508929600",
+                "signType": "MD5",
+                "paySign": "F0E04D74E417B57919439B1FDE234DED"
+                },
+                function(res){
+                    WeixinJSBridge.log(res.err_msg);
+                    alert(res.err_code+res.err_desc+res.err_msg);
+                }
+            );
+        }
+
+        function callpay()
+        {
+            if (typeof WeixinJSBridge == "undefined"){
+                // alert(111);
+                if( document.addEventListener ){
+                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+                }else if (document.attachEvent){
+                    document.attachEvent('WeixinJSBridgeReady', jsApiCall); 
+                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+                }
+            }else{
+                jsApiCall();
+            }
+        }
+    </script>
+</head>
+<body>
+    </br></br></br></br>
+    <div align="center">
+        <button style="width:210px; height:30px; background-color:#FE6714; border:0px #FE6714 solid; cursor: pointer;  color:white;  font-size:16px;" type="button" onclick="callpay()" >贡献一下</button>
+    </div>
+</body>
+</html>

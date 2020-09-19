@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script src="__JS__/js/jquery-1.9.1.min.js"></script>
+</head>
+<body>
+<form id="tf">
+            <!-- <input type="file" name="img"/> -->
+            <input type="text" name="username"/>
+            <input type="button" value="提交" onclick="test();"/>
+                    
+ </form>
+ <script type="text/javascript">
+ function test(){
+            var form = new FormData(document.getElementById("tf"));
+//             var req = new XMLHttpRequest();
+//             req.open("post", "${pageContext.request.contextPath}/public/testupload", false);
+//             req.send(form);
+			var url = "{:url('Login/login')}";
+            $.ajax({
+                url:url,
+                type:"post",
+                data:form,
+                processData:false,
+                contentType:false,
+                success:function(data){
+                    // window.clearInterval(timer);
+                    // console.log("over..");
+                },
+                // error:function(e){
+                //     alert("错误！！");
+                //     window.clearInterval(timer);
+                // }
+            });        
+            // get();//此处为上传文件的进度条
+        }
+ </script>
+</body>
+</html>
